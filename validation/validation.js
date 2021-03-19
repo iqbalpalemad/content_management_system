@@ -4,11 +4,6 @@ const Joi           = require('joi');
 
 const signupValidation =  (signupData) => {
     const signupValidationSchema  = Joi.object({
-        name : Joi.string()
-                .required()
-                .min(1)
-                .max(1024),
-
         email : Joi.string()
                     .email()
                     .required(),
