@@ -19,7 +19,7 @@ const signupValidation =  (signupData) => {
 }
 
 
-const loginValidation = async (loginData) => {
+const loginValidation =  (loginData) => {
     const loginValidationSchema  = Joi.object({
         email : Joi.string()
                     .email()
@@ -32,7 +32,7 @@ const loginValidation = async (loginData) => {
 
     }) 
 
-    return await loginValidationSchema.validateAsync(loginData)
+    return  loginValidationSchema.validate(loginData)
 }
 
 module.exports.signupValidation = signupValidation;

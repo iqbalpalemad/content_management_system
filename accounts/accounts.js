@@ -1,9 +1,12 @@
 const express = require('express');
 const User    = require('../model/User')
-const {signupValidation, loginValidation } = require('../validation/validation')
+const {signupValidation, loginValidation } = require('../validation/userValidation')
 const bcrypt  = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
+const jwt = require('jsonwebtoken');
+const dotenv   = require('dotenv');
 const router = express.Router();
+dotenv.config();
 
 router.post('/signup', (req,res) => {
     const { error , value } =  signupValidation(req.body);
@@ -76,6 +79,61 @@ router.post('/verify/:uuid',(req,res) => {
             
         }
     })
+})
+
+
+
+router.post('/login', (req,res) => {
+    const { error , value } =  loginValidation(req.body);
+    if(error){
+        errorMessage = error.details[0].message;
+        res.status(400).json({result : false, message : errorMessage});
+    }
+    else{
+        User.findOne({email:req.body.email}, (err,user) => {
+            if(err){
+                res.status(400).json({result : false, message : err.message});
+            }
+            else{
+                if(!user){
+                    res.status(400).json({result : false, message : "email address not found"});
+                }
+                else if(!user.emailVerified){
+                    res.status(400).json({result : false, message : "email address is not verified"});
+                }
+                else{
+                    bcrypt.compare(req.body.password,user.password, (err,result) => {
+                        if(err){
+                            res.status(400).json({result : false, message : err});
+                        }
+                        else{
+                            if(result){
+                                var jwtSecret = process.env.JWT_SECRET;
+                                var jwtToken  = jwt.sign({id:user._id},jwtSecret,{expiresIn:'1d'})
+                                res.json({result : true, message : "Logged in successfully",token : jwtToken});
+                            }
+                            else{
+                                res.status(400).json({result : false, message : "Password doesn't match"});
+                            }
+                        }
+                    })
+                }
+            }
+        })
+    }
+    
+})
+
+
+router.post('/test',(req,res) => {
+    console.log("test route");
+    var jwtSecret = process.env.JWT_SECRET;
+    var jwtToken  = jwt.sign({id:'123',email:'iqbal@nethram.com'},jwtSecret,{expiresIn:'1d'})
+    jwt.verify(jwtToken,jwtSecret,(err,decoded) =>{
+        console.log(err,"errror");
+        console.log(decoded.id,"decoded");
+    })
+    res.status(200).send({ auth: true, token: jwtToken });
 })
 
 module.exports = router;
