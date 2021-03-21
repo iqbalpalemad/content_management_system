@@ -1,11 +1,14 @@
 const express = require('express');
 const User    = require('../model/User')
-const {signupValidation, loginValidation } = require('../validation/userValidation')
+const {signupValidation, loginValidation,passwordResetValidation,forgotPasswordValidation } = require('../validation/userValidation')
 const bcrypt  = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
 const jwt = require('jsonwebtoken');
 const dotenv   = require('dotenv');
+const {sendEmail} = require("../email/email")
+const mailgun = require("mailgun-js");
 const router = express.Router();
+const {userAuth} = require('../middleware/userAuth');
 dotenv.config();
 
 router.post('/signup', (req,res) => {
@@ -43,7 +46,13 @@ router.post('/signup', (req,res) => {
                                         res.status(400).json({result : false, message : err.message});
                                     }
                                     else{
-                                        res.json({result : true, message : result._id});
+                                        var emailBody = "<html>\
+                                                            <h3><a>Click Here to Activate Your email</a></h3>\
+                                                        </html>"
+                                        
+                                        sendEmail('Verify Email <verify@samples.mailgun.org>',user.email,"Verify Email","",emailBody);
+                                        res.json({result : true, message : result._id,uuid : result.uuid});
+
                                     }
                                 })
                             }
@@ -62,23 +71,16 @@ router.post('/signup', (req,res) => {
 })
 
 
-router.post('/verify/:uuid',(req,res) => {
+router.post('/verify/:uuid',async (req,res) => {
     uuid = req.params.uuid;
-    User.updateOne({uuid : uuid},{emailVerified:true},(err,data) => {
-        if(err){
-            res.status(400).json({result : false, message : err});
-        }
-        else{
-            console.log(data);
-            if(data.nModified == 0){
-                res.json({result : false, message : "Invalid URL"});
-            }
-            else{
-                res.json({result : true, message : "Email address verified"});
-            }
-            
-        }
-    })
+    const updateVerified = await User.updateOne({uuid : uuid},{emailVerified:true});
+    if(updateVerified.nModified == 0){
+        res.json({result : false, message : "Invalid URL"});
+    }
+    else{
+        res.json({result : true, message : "Email address verified"});
+    }
+ 
 })
 
 
@@ -124,16 +126,57 @@ router.post('/login', (req,res) => {
     
 })
 
+router.post('/passwordReset',userAuth, async (req,res) => {
+    const { error , value } =  passwordResetValidation(req.body);
+    if(error){
+        errorMessage = error.details[0].message;
+        res.status(400).json({result : false, message : errorMessage});
+    }
+    else{
+        
+        const salt              = await bcrypt.genSalt(10);
+        const encryptedPassword = await bcrypt.hash(req.body.password, salt);
 
-router.post('/test',(req,res) => {
-    console.log("test route");
-    var jwtSecret = process.env.JWT_SECRET;
-    var jwtToken  = jwt.sign({id:'123',email:'iqbal@nethram.com'},jwtSecret,{expiresIn:'1d'})
-    jwt.verify(jwtToken,jwtSecret,(err,decoded) =>{
-        console.log(err,"errror");
-        console.log(decoded.id,"decoded");
-    })
-    res.status(200).send({ auth: true, token: jwtToken });
+        const updatePassword    = await User.updateOne({_id : req.body.id},{password:encryptedPassword,passwordUpdatedOn:Date.now()});
+        if(updatePassword.nModified == 0){
+            res.json({result : false, message : "Error in update"});
+        }
+        else{
+            res.json({result : true, message : "Password Updated Successfully"});
+        }
+    }
+})
+
+router.post('/forgotPassword',async (req,res) => {
+    const { error , value } =  forgotPasswordValidation(req.body);
+    if(error){
+        errorMessage = error.details[0].message;
+        res.status(400).json({result : false, message : errorMessage});
+    }
+    else{
+        var emailBody = "<html>\
+                        <h3><a>Click Here to Reset Your passw0rd</a></h3>\
+                    </html>"
+        var emailSend = await  sendEmail('Password Reset <reset@samples.mailgun.org>',req.body.email,"Password Reset","",emailBody);
+        if(emailSend){
+            res.json({result : true, message : "Email sent Successfully"});
+        }
+        else{
+            res.status(400).json({result : false, message : "email send failed"});
+        }
+    }
+
+})
+
+
+router.post('/test',async (req,res) => {
+    var emailBody = "<html>\
+                        <h3><a>Click Here to Activate Your email</a></h3>\
+                    </html>"
+    
+    var emailSend = await  sendEmail('Verify Email <verify@samples.mailgun.org>','iqbalpalemad@gmail.com',"Verify Email","",emailBody);
+    console.log(emailSend);
+    res.status(200).json({ auth: true});
 })
 
 module.exports = router;

@@ -116,8 +116,6 @@ router.post('/get',userAuth,(req,res) => {
     }
 })
 
-router.post('/test',userAuth,(req,res) =>{
-    
-})
+
 
 module.exports = router;
