@@ -33,5 +33,18 @@ const updateContentValidation =  (contentData) => {
     return  updateContentValidationSchema.validate(contentData)
 }
 
+const contentIdValidation =  (contentData) => {
+    const contentIdValidationSchema  = Joi.object({
+        id : Joi.string()
+                    .trim()
+                    .required()
+        
+
+    }) 
+    
+    return  contentIdValidationSchema.validate(contentData)
+}
+
 module.exports.createContentValidation = createContentValidation;
 module.exports.updateContentValidation = updateContentValidation;
+module.exports.contentIdValidation     = contentIdValidation;
