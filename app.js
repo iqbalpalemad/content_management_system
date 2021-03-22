@@ -1,6 +1,6 @@
-const express  = require('express');
-const mongoose = require('mongoose');
-const dotenv   = require('dotenv');
+const express       = require('express');
+const mongoose      = require('mongoose');
+const dotenv        = require('dotenv');
 const accountRoutes = require('./accounts/accounts');
 const contentRoutes = require('./contents/contents')
 const app           = express();
@@ -14,8 +14,8 @@ mongoose.connect(process.env.DB_CONNECT,
     console.log("connected to db");
 })
 app.use(express.json());
-app.use('/accounts',accountRoutes);
-app.use('/contents',contentRoutes);
+app.use('/accounts',accountRoutes);   //Routes related to account user action
+app.use('/contents',contentRoutes);   //Routes related to content actions
 
 
 app.listen(5000, () => {

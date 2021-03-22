@@ -1,14 +1,18 @@
-const express = require('express');
-const User    = require('../model/User')
-const {signupValidation, loginValidation,passwordResetValidation,forgotPasswordValidation } = require('../validation/userValidation')
-const bcrypt  = require('bcryptjs');
-const { v4: uuidv4 } = require('uuid');
-const jwt = require('jsonwebtoken');
-const dotenv   = require('dotenv');
-const {sendEmail} = require("../email/email")
-const mailgun = require("mailgun-js");
-const router = express.Router();
-const {userAuth} = require('../middleware/userAuth');
+const express                       = require('express');
+const User                          = require('../model/User')
+const {signupValidation, 
+       loginValidation,
+       passwordResetValidation,
+       forgotPasswordValidation }    = require('../validation/userValidation')
+const bcrypt                         = require('bcryptjs');
+const { v4: uuidv4 }                 = require('uuid');
+const jwt                            = require('jsonwebtoken');
+const dotenv                         = require('dotenv');
+const {sendEmail}                    = require("../email/email")
+const router                         = express.Router();
+const {userAuth}                     = require('../middleware/userAuth');
+
+
 dotenv.config();
 
 router.post('/signup', (req,res) => {
@@ -41,8 +45,6 @@ router.post('/signup', (req,res) => {
                             try{
                                 user.save((err,result) => {
                                     if(err){
-                                        console.log("error from here");
-                                        console.log(err.message);
                                         res.status(400).json({result : false, message : err.message});
                                     }
                                     else{
@@ -169,14 +171,6 @@ router.post('/forgotPassword',async (req,res) => {
 })
 
 
-router.post('/test',async (req,res) => {
-    var emailBody = "<html>\
-                        <h3><a>Click Here to Activate Your email</a></h3>\
-                    </html>"
-    
-    var emailSend = await  sendEmail('Verify Email <verify@samples.mailgun.org>','iqbalpalemad@gmail.com',"Verify Email","",emailBody);
-    console.log(emailSend);
-    res.status(200).json({ auth: true});
-})
+
 
 module.exports = router;

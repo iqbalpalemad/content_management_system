@@ -1,10 +1,14 @@
-const express  = require('express');
-const Content  = require('../model/Content')
-const {userAuth} = require('../middleware/userAuth');
-const {createContentValidation,updateContentValidation,contentIdValidation } = require('../validation/contentValidation')
-const dotenv   = require('dotenv');
-const User = require('../model/User');
-const router = express.Router();
+const express                          = require('express');
+const Content                          = require('../model/Content')
+const {userAuth}                       = require('../middleware/userAuth');
+const {createContentValidation,
+       updateContentValidation,
+       contentIdValidation,
+       contentShareValidation,
+       contentListValidation }         = require('../validation/contentValidation')
+const dotenv                           = require('dotenv');
+const router                           = express.Router();
+
 dotenv.config();
 
 
@@ -113,6 +117,53 @@ router.post('/get',userAuth,(req,res) => {
                 res.json({result : true, message : content});
             }
         })
+    }
+})
+
+router.post('/share',userAuth,async (req,res) => {
+    const { error , value } =  contentShareValidation(req.body);
+    if(error){
+        errorMessage = error.details[0].message;
+        res.status(400).json({result : false, message : errorMessage});
+    }
+    else{
+        const content = await Content.findOne({_id : req.body.id})
+        if(content.deleted){
+            return res.status(400).json({result : false, message : "Content Already deleted"});
+        }
+
+        content.shared      = true;
+        content.sharedWith  = req.body.sharedWith;
+        content.sharedOn    = Date.now();
+        content.permissions = req.body.permissions;
+        const contentSave   = await content.save();
+        return res.json({result : true, message : "Content Shared Successfully"});
+    }
+})
+
+router.post('/all',userAuth, async (req,res) => {
+    const { error , value } =  contentListValidation(req.body);
+    if(error){
+        errorMessage = error.details[0].message;
+        res.status(400).json({result : false, message : errorMessage});
+    }
+    else{
+        const page       = parseInt(req.body.page);
+        const limit      = parseInt(req.body.limit);
+        const skipIndex  = (page - 1) * limit;
+        var queryOptions = {};
+        if(req.body.owner == "Collaborator"){
+            queryOptions = {permissions : {$exists: true, $all : ["Write","Read"]}}
+        }
+        else{
+            queryOptions =   {permissions : {$exists: true, $nin : ["Write"]}}
+        }
+        const list = await Content.find(queryOptions)
+                                  .sort({ _id: 1 })
+                                  .limit(limit)
+                                  .skip(skipIndex)
+                                  .exec();
+        return res.json({result : true, message : list});
     }
 })
 

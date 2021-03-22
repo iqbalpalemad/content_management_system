@@ -45,6 +45,38 @@ const contentIdValidation =  (contentData) => {
     return  contentIdValidationSchema.validate(contentData)
 }
 
+const contentShareValidation = (contentData) => {
+    const contentShareValidationSchema  = Joi.object({
+        id          : Joi.string()
+                         .trim()
+                         .required(),
+        sharedWith  : Joi.string()
+                         .trim()
+                         .required(),
+        permissions : Joi.array().items(Joi.string().valid('Read','Write'))
+                         .required()
+        
+
+    }) 
+    return  contentShareValidationSchema.validate(contentData)
+}
+
+const contentListValidation = (contentData) => {
+    const contentListValidationSchema  = Joi.object({
+        limit  : Joi.number()
+                    .required(),
+        page  : Joi.number()
+                    .required(),
+        owner : Joi.string()
+                   .trim()
+                   .required()
+                   .valid('Collaborator','Visitor')
+    }) 
+    return  contentListValidationSchema.validate(contentData)
+}
+
 module.exports.createContentValidation = createContentValidation;
 module.exports.updateContentValidation = updateContentValidation;
 module.exports.contentIdValidation     = contentIdValidation;
+module.exports.contentShareValidation  = contentShareValidation;
+module.exports.contentListValidation   = contentListValidation;

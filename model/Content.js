@@ -27,6 +27,19 @@ const contentSchema = new mongoose.Schema({
     },
     deletedOn : {
         type    : Date
+    },
+    shared : {
+        type : Boolean ,
+        default : false
+    },
+    sharedWith : {
+        type: String
+    },
+    sharedOn : {
+        type    : Date
+    },
+    permissions : {
+        type    : [String]
     }
 });
 
