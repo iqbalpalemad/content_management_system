@@ -3,6 +3,7 @@ const mongoose      = require('mongoose');
 const dotenv        = require('dotenv');
 const accountRoutes = require('./accounts/accounts');
 const contentRoutes = require('./contents/contents')
+const analyticRoute = require('./analytics/analytics')
 const app           = express();
 dotenv.config();
 
@@ -16,6 +17,7 @@ mongoose.connect(process.env.DB_CONNECT,
 app.use(express.json());
 app.use('/accounts',accountRoutes);   //Routes related to account user action
 app.use('/contents',contentRoutes);   //Routes related to content actions
+app.use('/analytics',analyticRoute);   //Routes related to analytics actions
 
 
 app.listen(5000, () => {

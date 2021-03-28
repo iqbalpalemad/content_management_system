@@ -22,10 +22,7 @@ const updateContentValidation =  (contentData) => {
                     .max(1024),
         body : Joi.string()
                     .trim()
-                    .max(1024),
-        id   : Joi.string()
-                    .trim()
-                    .required()
+                    .max(1024)
 
 
     }).or("title","body") 
@@ -47,9 +44,6 @@ const contentIdValidation =  (contentData) => {
 
 const contentShareValidation = (contentData) => {
     const contentShareValidationSchema  = Joi.object({
-        id          : Joi.string()
-                         .trim()
-                         .required(),
         sharedWith  : Joi.string()
                          .trim()
                          .required(),
