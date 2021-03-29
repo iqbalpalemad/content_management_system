@@ -24,21 +24,31 @@ router.post('/content/',userAuth,async (req,res) => {
         if(req.body.id){
             queryOptions['contentId'] = req.body.id;
         }
-
-        queryOptions['event'] = "create"; 
-        const createCount = await ContentEvent.countDocuments(queryOptions);
-
-        queryOptions['event'] = "view"; 
-        const viewCount = await ContentEvent.countDocuments(queryOptions);
-
-        queryOptions['event'] = "update"; 
-        const updateCount = await ContentEvent.countDocuments(queryOptions);
-
-        queryOptions['event'] = "share"; 
-        const shareCount = await ContentEvent.countDocuments(queryOptions);
-
-        queryOptions['event'] = "delete"; 
-        const deleteCount = await ContentEvent.countDocuments(queryOptions);
+        var   createCount    = 0;
+        var   viewCount      = 0;
+        var   updateCount    = 0;
+        var   shareCount     = 0;
+        var   deleteCount    = 0;
+        const documentEvents  = await ContentEvent.find(queryOptions);
+        documentEvents.forEach(element => {
+            switch (element.event) {
+                case "create":
+                    createCount++;
+                    break;
+                case "view":
+                    viewCount++;
+                    break;
+                case "update":
+                    updateCount++;
+                    break;
+                case "share":
+                    shareCount++;
+                    break;
+                case "delete":
+                    deleteCount++;
+                    break;
+            }
+        });
         return res.json({result : true,
             created : createCount,
             viewed : viewCount,

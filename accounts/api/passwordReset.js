@@ -23,7 +23,7 @@ router.post('/passwordReset',userAuth, async (req,res) => {
             res.json({result : false, message : "Error in update"});
         }
         else{
-            const saveEvent   = await addAccountEvent("passwordreset");
+            const saveEvent   = await addAccountEvent("passwordreset",req.userId);
             res.json({result : true, message : "Password Updated Successfully"});
         }
     }

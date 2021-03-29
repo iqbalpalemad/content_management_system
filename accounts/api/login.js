@@ -32,7 +32,7 @@ router.post('/login',async (req,res) => {
 
     const jwtSecret = process.env.JWT_SECRET;
     const jwtToken  = jwt.sign({id:user._id},jwtSecret,{expiresIn:'1d'})
-    const saveEvent = await addAccountEvent("login");
+    const saveEvent = await addAccountEvent("login",user._id);
     return res.json({result : true, message : "Logged in successfully",token : jwtToken});
 
 

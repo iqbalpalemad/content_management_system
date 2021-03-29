@@ -19,29 +19,51 @@ router.post('/',async (req,res) => {
                                     }
                                 
                             };
-        queryOptions['event'] = "signup";
-        const signupCount = await AccountEvent.countDocuments(queryOptions);
+        if(req.body.id){
+            queryOptions['userId'] = req.body.id;
+        }                            
+        var   signupCount    = 0;
+        var   loginCount     = 0;
+        var   createCount    = 0;
+        var   viewCount      = 0;
+        var   updateCount    = 0;
+        var   shareCount     = 0;
+        var   deleteCount    = 0;
+        const accountEvents  = await AccountEvent.find(queryOptions);
 
-        queryOptions['event'] = "login"; 
-        const loginCount = await AccountEvent.countDocuments(queryOptions);
-
-        queryOptions['event'] = "create"; 
-        const createCount = await ContentEvent.countDocuments(queryOptions);
-
-        queryOptions['event'] = "view"; 
-        const viewCount = await ContentEvent.countDocuments(queryOptions);
-
-        queryOptions['event'] = "update"; 
-        const updateCount = await ContentEvent.countDocuments(queryOptions);
-
-        queryOptions['event'] = "share"; 
-        const shareCount = await ContentEvent.countDocuments(queryOptions);
-
-        queryOptions['event'] = "delete"; 
-        const deleteCount = await ContentEvent.countDocuments(queryOptions);
+        accountEvents.forEach(element => {
+            switch (element.event) {
+                case "signup":
+                    signupCount++;
+                    break;
+                case "login":
+                    loginCount++;
+                    break;
+            }
+        });
+        const documentEvents  = await ContentEvent.find(queryOptions);
+        documentEvents.forEach(element => {
+            switch (element.event) {
+                case "create":
+                    createCount++;
+                    break;
+                case "view":
+                    viewCount++;
+                    break;
+                case "update":
+                    updateCount++;
+                    break;
+                case "share":
+                    shareCount++;
+                    break;
+                case "delete":
+                    deleteCount++;
+                    break;
+            }
+        });
 
         return res.json({result : true, 
-                            signup : signupCount, 
+                            signup : signupCount,
                             login : loginCount, 
                             created : createCount,
                             viewed : viewCount,

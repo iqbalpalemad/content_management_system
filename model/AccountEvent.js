@@ -1,6 +1,10 @@
 const mongoose = require('mongoose');
 
 const accountEventSchema = new mongoose.Schema({
+    userId : {
+        type : mongoose.Schema.Types.ObjectId,
+        required : false,
+    },
     event : {
         type : String,
         required : true,

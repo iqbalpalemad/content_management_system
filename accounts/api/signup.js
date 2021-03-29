@@ -36,7 +36,7 @@ router.post('/signup', async (req,res) => {
                         </html>"
         
         sendEmail('Verify Email <verify@samples.mailgun.org>',saveUser.email,"Verify Email","",emailBody); // Send email using mailgun.
-        const saveEvent   = await addAccountEvent("signup");
+        const saveEvent   = await addAccountEvent("signup",saveUser._id);
         return res.json({result : true, message : saveUser._id,uuid : saveUser.uuid});
     }
     catch(err){
