@@ -1,4 +1,5 @@
 const express                          = require('express');
+const mongoose                         = require('mongoose');
 const AccountEvent                     = require('../../model/AccountEvent')
 const ContentEvent                     = require('../../model/ContentEvent')
 const {eventValidation }               = require('../../validation/eventValidation')
@@ -14,63 +15,52 @@ router.post('/',async (req,res) => {
     try{
         var queryOptions = {eventOn : 
                                     { 
-                                        $gte : req.body.startTime,
-                                        $lte : req.body.endTime
+                                        $gte : new Date(req.body.startTime),
+                                        $lte : new Date(req.body.endTime)
                                     }
                                 
                             };
         if(req.body.id){
-            queryOptions['userId'] = req.body.id;
-        }                            
-        var   signupCount    = 0;
-        var   loginCount     = 0;
-        var   createCount    = 0;
-        var   viewCount      = 0;
-        var   updateCount    = 0;
-        var   shareCount     = 0;
-        var   deleteCount    = 0;
-        const accountEvents  = await AccountEvent.find(queryOptions);
-
-        accountEvents.forEach(element => {
-            switch (element.event) {
-                case "signup":
-                    signupCount++;
-                    break;
-                case "login":
-                    loginCount++;
-                    break;
-            }
-        });
-        const documentEvents  = await ContentEvent.find(queryOptions);
+            queryOptions['userId'] =  mongoose.Types.ObjectId(req.body.id);
+        }   
+        
+        const documentEvents  = await ContentEvent.aggregate(
+            [
+                { $match : queryOptions },
+                { $group : {
+                            
+                            _id : '$event',
+                            count : { $sum: 1 }
+                            }
+                }
+            ]
+        );
+        var return_object = {"result":true,"view":0,"share":0,"delete":0,"update":0,"create":0,"signup":0,"login":0};
         documentEvents.forEach(element => {
-            switch (element.event) {
-                case "create":
-                    createCount++;
-                    break;
-                case "view":
-                    viewCount++;
-                    break;
-                case "update":
-                    updateCount++;
-                    break;
-                case "share":
-                    shareCount++;
-                    break;
-                case "delete":
-                    deleteCount++;
-                    break;
-            }
+            return_object[element._id] = element.count;
         });
 
-        return res.json({result : true, 
-                            signup : signupCount,
-                            login : loginCount, 
-                            created : createCount,
-                            viewed : viewCount,
-                            updated : updateCount,
-                            shared : shareCount,
-                            deleted : deleteCount
-                        });
+        const accountEvents  = await AccountEvent.aggregate(
+            [
+                { $match : queryOptions },
+                { $group : {
+                            
+                            _id : '$event',
+                            count : { $sum: 1 }
+                            }
+                }
+            ]
+        );
+        accountEvents.forEach(element => {
+            return_object[element._id] = element.count;
+        });
+
+
+
+
+        
+
+        return res.json(return_object);
     }catch(err){
         return res.json({result : false, message : err.message});
     }
