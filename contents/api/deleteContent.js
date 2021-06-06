@@ -18,7 +18,7 @@ router.delete('/:contentId',userAuth,async (req,res) => {
         content.deletedOn    = Date.now();
         const saveContent    = await content.save()
         const saveEvent      = await addContentEvent(req.userId,saveContent._id,"delete");
-        return res.json({result : true, message : "Content Deleted"});
+        return res.status(200).json({result : true, message : "Content Deleted"});
     }
     catch(err){
         res.status(400).json({result : false, message : err.message});

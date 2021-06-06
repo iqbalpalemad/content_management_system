@@ -25,8 +25,8 @@ describe("Testing forgot password API", () => {
         }
 
         const response = await request.post('/accounts/forgotPassword').send(test_data);
-        expect(response.status).toBe(200);
-        expect(response.body.result).toBe(true);
+        expect(response.status).toBe(400);
+        expect(response.body.result).toBe(false);
     })
 
 })

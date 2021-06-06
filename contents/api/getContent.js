@@ -15,7 +15,7 @@ router.get('/:contentId',userAuth,async (req,res) => {
             return res.status(400).json({result : false, message : "Content Already Deleted"});
         }
         const saveEvent      = await addContentEvent(req.userId,content._id,"view");
-        return  res.json({result : true, message : content});  
+        return  res.status(200).json({result : true, message : content});  
     }catch(err){
         return res.status(400).json({result : false, message : err.message});
     }
